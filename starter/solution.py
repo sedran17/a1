@@ -132,8 +132,56 @@ def iterative_astar( # uses f(n)
     :return: A tuple consisting of the goal SokobanState or False if such a state
              is not found, and a SearchStatistics object.
     """
-    # TODO: IMPLEMENT
-    raise NotImplementedError("You must implement iterative_astar.")
+    start = os.times()[0]
+    max_cost = float('inf')
+    best_soln = None
+    first_call = True
+
+
+    while True:
+        #Create search engine
+        wrap_fn = lambda sN: fval_function(sN, weight)
+
+        search_eng = SearchEngine(strategy='custom')
+        search_eng.init_search(initial_state, sokoban_goal_state, heur_manhattan_distance, wrap_fn)
+
+        #Update Time
+        time_left = timebound - (os.times()[0] - start)
+
+        #Check to see if Under time
+        if not first_call:
+            if time_left <= 0:
+                if best_soln is not None:
+                    return best_soln
+                else:
+                    return result
+
+        #Search
+        result = search_eng.search(time_left, (float('inf'), float('inf'), max_cost))
+        if first_call and result[0] == False:
+            return result
+        first_call = False
+
+        if result[0] == False:
+            if best_soln is not None:
+                return best_soln
+            else:
+                return result
+
+        #Update cost
+        cost = result[0].gval
+        if cost < max_cost:
+            max_cost = cost
+            best_soln = result
+
+        #Update Weight
+        if weight <= 1:
+            return best_soln
+        else:
+            weight /= 2
+
+
+
 
 def iterative_gbfs( # uses h(n)
         initial_state: 'SokobanState',
