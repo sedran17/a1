@@ -137,6 +137,65 @@ def iterative_astar( # uses f(n)
     best_soln = None
     first_call = True
 
+    while True:
+
+        # Check time FIRST
+        time_left = timebound - (os.times()[0] - start)
+        if time_left <= 0:
+            break
+
+        # Create search engine
+        wrap_fn = lambda sN: fval_function(sN, weight)
+
+        search_eng = SearchEngine(strategy='custom')
+        search_eng.init_search(
+            initial_state,
+            sokoban_goal_state,
+            heur_manhattan_distance,
+            wrap_fn
+        )
+
+        # Run search
+        result = search_eng.search(
+            time_left,
+            (float('inf'), float('inf'), max_cost)
+        )
+
+        # If first call finds nothing → no solution exists
+        if first_call and result[0] == False:
+            return result
+
+        first_call = False
+
+        # If later call finds nothing → cannot improve further
+        if result[0] == False:
+            break
+
+        # Update best solution
+        cost = result[0].gval
+        if cost < max_cost:
+            max_cost = cost
+            best_soln = result
+
+        # Stop if weight reached 1 (regular A*)
+        if weight <= 1:
+            break
+
+        weight /= 2
+
+    # Final return
+    if best_soln is not None:
+        return best_soln
+    else:
+        return result
+
+
+    '''
+    start = os.times()[0]
+    max_cost = float('inf')
+    best_soln = None
+    first_call = True
+
 
     while True:
         #Create search engine
@@ -179,7 +238,7 @@ def iterative_astar( # uses f(n)
             return best_soln
         else:
             weight /= 2
-
+'''
 
 
 
