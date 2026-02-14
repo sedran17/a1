@@ -19,106 +19,60 @@ from src import (
 
 # SOKOBAN HEURISTICS
 def heur_alternate(state: 'SokobanState') -> float:
-    """
-    Returns a heuristic value with the goal of improving upon
-    the flaws inherent to a heuristic that uses Manhattan distance
-    and produce a more accurate estimate of the distance from the
-    current state to the goal state.
 
-    You must explain your heuristic via inline comments.
 
-    :param state: A SokobanState object representing the current
-                  state in a game of Sokoban.
-    :return: An estimate of the distance from the current
-             SokobanState to the goal state.
-    """
+    boxes = list(state.boxes)
+    storage = list(state.storage)
+    walls = state.obstacles
 
-    boxes = state.boxes
-    storages = state.storage
-    obstacles = set(state.obstacles)
-
-    # If all boxes already stored
-    if boxes == storages:
-        return 0
-
-    # ---------------------------------
-    # 1. Static Corner Deadlock Check
-    # ---------------------------------
+    # -------------------------
+    # 1️⃣ Corner Deadlock Check
+    # -------------------------
     for (x, y) in boxes:
-        if (x, y) not in storages:
 
-            up = (x, y - 1) in obstacles
-            down = (x, y + 1) in obstacles
-            left = (x - 1, y) in obstacles
-            right = (x + 1, y) in obstacles
+        # If box already on storage, skip
+        if (x, y) in state.storage:
+            continue
 
-            # Box stuck in corner (not storage)
-            if (up and left) or (up and right) or \
-               (down and left) or (down and right):
-                return float('inf')
+        # Check 4 corner configurations
+        if ((x-1, y) in walls and (x, y-1) in walls) or \
+           ((x-1, y) in walls and (x, y+1) in walls) or \
+           ((x+1, y) in walls and (x, y-1) in walls) or \
+           ((x+1, y) in walls and (x, y+1) in walls):
 
-    # ---------------------------------
-    # 2. Minimum-Cost Perfect Matching
-    # ---------------------------------
+            return float('inf')  # Dead state
 
-    # Unstored boxes
-    unstored = []
-    for b in boxes:
-        if b not in storages:
-            unstored.append(b)
+    # -----------------------------------
+    # 2️⃣ Optimal Matching via Backtracking
+    # -----------------------------------
 
-    # Free storages
-    free_storages = []
-    for s in storages:
-        if s not in boxes:
-            free_storages.append(s)
+    n = len(boxes)
+    used = [False] * len(storage)
 
-    n = len(unstored)
+    def backtrack(i):
+        if i == n:
+            return 0
 
-    if n == 0:
-        return 0
+        min_cost = float('inf')
 
-    # If mismatch (invalid state)
-    if n != len(free_storages):
-        return float('inf')
-
-    # Precompute Manhattan distances
-    cost_matrix = []
-    for i in range(n):
-        row = []
-        bx, by = unstored[i]
-        for j in range(n):
-            sx, sy = free_storages[j]
-            row.append(abs(bx - sx) + abs(by - sy))
-        cost_matrix.append(row)
-
-    # Backtracking to compute minimum assignment cost
-    used = [False] * n
-    min_cost = float('inf')
-
-    def backtrack(box_index, current_cost):
-        nonlocal min_cost
-
-        # Prune if already worse
-        if current_cost >= min_cost:
-            return
-
-        if box_index == n:
-            min_cost = current_cost
-            return
-
-        for j in range(n):
+        for j in range(len(storage)):
             if not used[j]:
                 used[j] = True
-                backtrack(
-                    box_index + 1,
-                    current_cost + cost_matrix[box_index][j]
-                )
+
+                cost = abs(boxes[i][0] - storage[j][0]) + \
+                       abs(boxes[i][1] - storage[j][1])
+
+                total = cost + backtrack(i + 1)
+
+                if total < min_cost:
+                    min_cost = total
+
                 used[j] = False
 
-    backtrack(0, 0)
+        return min_cost
 
-    return min_cost
+    return backtrack(0)
+
 
 def heur_zero(state: 'SokobanState') -> float:
     """
