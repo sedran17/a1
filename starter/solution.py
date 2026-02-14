@@ -32,75 +32,93 @@ def heur_alternate(state: 'SokobanState') -> float:
     :return: An estimate of the distance from the current
              SokobanState to the goal state.
     """
-    import itertools
-import math
-
-def heur_alternate(state):
-    """
-    Alternate heuristic for Sokoban.
-
-    This heuristic improves over Manhattan distance by:
-
-    1. Computing a minimum-cost perfect matching between boxes and storage
-       locations using Manhattan distance (each storage used once).
-
-    2. Detecting simple static deadlocks (box stuck in a corner that is
-       not a storage location). If detected, returns infinity.
-
-    This heuristic is admissible because:
-    - Manhattan distance is admissible.
-    - Minimum-cost matching preserves admissibility.
-    - Deadlock detection only returns infinity for truly unsolvable states.
-    """
 
     boxes = state.boxes
     storages = state.storage
     obstacles = set(state.obstacles)
 
-    # If all boxes are already stored
+    # If all boxes already stored
     if boxes == storages:
         return 0
 
-    # -----------------------------
-    # 1. Deadlock Detection (corner)
-    # -----------------------------
-    for box in boxes:
-        if box not in storages:
-            x, y = box
+    # ---------------------------------
+    # 1. Static Corner Deadlock Check
+    # ---------------------------------
+    for (x, y) in boxes:
+        if (x, y) not in storages:
 
-            # Check walls or obstacles around box
             up = (x, y - 1) in obstacles
             down = (x, y + 1) in obstacles
             left = (x - 1, y) in obstacles
             right = (x + 1, y) in obstacles
 
-            # Corner deadlock: box stuck against two perpendicular walls
-            if (up and left) or (up and right) or (down and left) or (down and right):
+            # Box stuck in corner (not storage)
+            if (up and left) or (up and right) or \
+               (down and left) or (down and right):
                 return float('inf')
 
-    # ---------------------------------------------------
-    # 2. Minimum-Cost Perfect Matching (Assignment)
-    # ---------------------------------------------------
+    # ---------------------------------
+    # 2. Minimum-Cost Perfect Matching
+    # ---------------------------------
 
-    # Only consider boxes not already stored
-    unstored_boxes = [b for b in boxes if b not in storages]
-    free_storages = [s for s in storages if s not in boxes]
+    # Unstored boxes
+    unstored = []
+    for b in boxes:
+        if b not in storages:
+            unstored.append(b)
 
-    # If mismatch in counts (shouldn't happen in valid Sokoban)
-    if len(unstored_boxes) != len(free_storages):
+    # Free storages
+    free_storages = []
+    for s in storages:
+        if s not in boxes:
+            free_storages.append(s)
+
+    n = len(unstored)
+
+    if n == 0:
+        return 0
+
+    # If mismatch (invalid state)
+    if n != len(free_storages):
         return float('inf')
 
+    # Precompute Manhattan distances
+    cost_matrix = []
+    for i in range(n):
+        row = []
+        bx, by = unstored[i]
+        for j in range(n):
+            sx, sy = free_storages[j]
+            row.append(abs(bx - sx) + abs(by - sy))
+        cost_matrix.append(row)
+
+    # Backtracking to compute minimum assignment cost
+    used = [False] * n
     min_cost = float('inf')
 
-    # Since box counts are small, brute-force permutations is fine
-    for perm in itertools.permutations(free_storages):
-        cost = 0
-        for box, storage in zip(unstored_boxes, perm):
-            cost += abs(box[0] - storage[0]) + abs(box[1] - storage[1])
-        min_cost = min(min_cost, cost)
+    def backtrack(box_index, current_cost):
+        nonlocal min_cost
+
+        # Prune if already worse
+        if current_cost >= min_cost:
+            return
+
+        if box_index == n:
+            min_cost = current_cost
+            return
+
+        for j in range(n):
+            if not used[j]:
+                used[j] = True
+                backtrack(
+                    box_index + 1,
+                    current_cost + cost_matrix[box_index][j]
+                )
+                used[j] = False
+
+    backtrack(0, 0)
 
     return min_cost
-
 
 def heur_zero(state: 'SokobanState') -> float:
     """
@@ -174,7 +192,7 @@ def weighted_astar(
     wrap_fn = lambda sN: fval_function(sN, weight)
 
     search_eng = SearchEngine(strategy='custom')
-    search_eng.init_search(initial_state, sokoban_goal_state, heur_manhattan_distance, wrap_fn)
+    search_eng.init_search(initial_state, sokoban_goal_state, heur_alternate, wrap_fn)
 
     return search_eng.search(timebound)
 
@@ -211,7 +229,7 @@ def iterative_astar( # uses f(n)
         wrap_fn = lambda sN: fval_function(sN, weight)
 
         search_eng = SearchEngine(strategy='custom')
-        search_eng.init_search(initial_state, sokoban_goal_state, heur_manhattan_distance, wrap_fn)
+        search_eng.init_search(initial_state, sokoban_goal_state, heur_alternate, wrap_fn)
 
         #Update Time
         time_left = timebound - (os.times()[0] - start)
@@ -273,7 +291,7 @@ def iterative_gbfs( # uses h(n)
         #Create search engine
         wrap_fn = lambda sN: sN.hval
         search_eng = SearchEngine(strategy='custom')
-        search_eng.init_search(initial_state, sokoban_goal_state, heur_manhattan_distance, wrap_fn)
+        search_eng.init_search(initial_state, sokoban_goal_state, heur_alternate, wrap_fn)
 
         #Update Time
         time_left = timebound - (os.times()[0] - start)
