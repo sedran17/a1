@@ -64,9 +64,9 @@ def heur_manhattan_distance(state: 'SokobanState') -> float:
     """
     dist = 0
     for box in state.boxes:
-        min_dist = abs(box[0] - state.storage[0][0]) + abs(box[1] - state.storage[0][1])
-        for i in range(1, len(state.storage)):
-            new_dist = abs(box[0] - state.storage[i][0]) + abs(box[1] - state.storage[i][1])
+        min_dist = float('inf')
+        for stor in state.storage:
+            new_dist = abs(box[0] - stor[0]) + abs(box[1] - stor[1])
             if new_dist < min_dist:
                 min_dist = new_dist
         dist += min_dist
