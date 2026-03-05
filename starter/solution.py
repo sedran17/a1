@@ -19,55 +19,63 @@ from src import (
 
 # SOKOBAN HEURISTICS
 def heur_alternate(state: 'SokobanState') -> float:
+    """
+    Returns a heuristic value with the goal of improving upon
+    the flaws inherent to a heuristic that uses Manhattan distance
+    and produce a more accurate estimate of the distance from the
+    current state to the goal state.
 
+    You must explain your heuristic via inline comments.
 
+    :param state: A SokobanState object representing the current
+                  state in a game of Sokoban.
+    :return: An estimate of the distance from the current
+             SokobanState to the goal state.
+    """
+
+    #turns frozensets into lists so they can be iterated through
     boxes = list(state.boxes)
     storage = list(state.storage)
     walls = state.obstacles
 
-    # -------------------------
-    # 1️⃣ Corner Deadlock Check
-    # -------------------------
+    #If a box is stuck in a corner, it can never move from its spot so the code first checks to see if any boxes are stuck in the corners
     for (x, y) in boxes:
-
-        # If box already on storage, skip
+        #Skip box if it is already in a storage spot
         if (x, y) in state.storage:
             continue
 
-        # Check 4 corner configurations
-        if ((x-1, y) in walls and (x, y-1) in walls) or \
-           ((x-1, y) in walls and (x, y+1) in walls) or \
-           ((x+1, y) in walls and (x, y-1) in walls) or \
-           ((x+1, y) in walls and (x, y+1) in walls):
+        # Check each corner and if a box is already there return a really high number to show that the box cant be moved
+        if ((x-1, y) in walls and (x, y-1) in walls) or ((x-1, y) in walls and (x, y+1) in walls) or ((x+1, y) in walls and (x, y-1) in walls) or ((x+1, y) in walls and (x, y+1) in walls):
+            return float('inf')
 
-            return float('inf')  # Dead state
 
-    # -----------------------------------
-    # 2️⃣ Optimal Matching via Backtracking
-    # -----------------------------------
 
+    #The manhattan algortihm had an issue where multiple boxes could be assigned to the same storage spot, so this makes sure each box goes in it's own unique storage spot
     n = len(boxes)
-    used = [False] * len(storage)
+    used = [False] * len(storage) #Keeps track of which storage spots have already been assigned
 
     def backtrack(i):
+        #If all boxes are assigned already:
         if i == n:
             return 0
 
         min_cost = float('inf')
 
-        for j in range(len(storage)):
+        for j in range(len(storage)): #cycles through storage spots
             if not used[j]:
-                used[j] = True
+                used[j] = True #mark this storage spot as assigned
 
-                cost = abs(boxes[i][0] - storage[j][0]) + \
-                       abs(boxes[i][1] - storage[j][1])
+                #calculate manhattan distance between the box and this storage spot
+                cost = abs(boxes[i][0] - storage[j][0]) + abs(boxes[i][1] - storage[j][1])
 
+                #assign the next box using recursion
                 total = cost + backtrack(i + 1)
 
+                #update min cost
                 if total < min_cost:
                     min_cost = total
 
-                used[j] = False
+                used[j] = False #unmark this storage spot so it can be compared with other boxes
 
         return min_cost
 
