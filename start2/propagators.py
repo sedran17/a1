@@ -75,9 +75,33 @@ def prop_FC(csp: 'CSP', newVar: 'Variable' = None) -> tuple[bool, list[tuple['Va
     :param csp: the constraint satisfaction problem
     :param newVar: the most recently assigned variable
     """
-    if newVar == None:
-        for var in csp.scope:
-            
+    to_check = []
+    init_list = []
+    pruned = []
+    if newVar is None:
+        init_list = csp.constraints
+    else:
+        init_list = csp.get_cons_with_var(newVar)
+
+    for con in init_list:
+        if con.get_n_unassigned_vars() == 1:
+            to_check.append(con)
+    if len(to_check)==0:
+        return True, []
+
+    for con in to_check:
+        un_assig = con.get_unassigned_vars()[0]
+
+        vals = un_assig.cur_domain()
+        for val in vals:
+            if not con.has_support(un_assig, val):
+                un_assig.prune_value(val)
+                pruned.append((un_assig, val))
+        if un_assig.cur_domain_size() == 0:
+            return False, pruned
+
+    return True, pruned
+
 
 
 def prop_GAC(csp: 'CSP', newVar: 'Variable' = None) -> tuple[bool, list[tuple['Variable', Any]]]:
@@ -85,7 +109,7 @@ def prop_GAC(csp: 'CSP', newVar: 'Variable' = None) -> tuple[bool, list[tuple['V
     Return a tuple consisting of a boolean that represents whether we can
     continue propagating and the associated list of (Variable, Value) pairs
     that were pruned during propagation.
-    
+
     If GAC is called without a newly-instantiated variable, initialize the GAC
     queue with all constraints in csp.
 
@@ -95,9 +119,28 @@ def prop_GAC(csp: 'CSP', newVar: 'Variable' = None) -> tuple[bool, list[tuple['V
     :param csp: the constraint satisfaction problem
     :param newVar: the most recently assigned variable
     """
-    # TODO: Implement
-    raise NotImplementedError("prop_GAC not implemented")
+    pruned = []
+    queue = []
+    if newVar is None:
+        queue = csp.constraints
+    else:
+        queue = csp.get_cons_with_var(newVar)
 
+    while(len(queue) > 0):
+        con = queue.pop(0)
+        for var in con.get_scope():
+            for val in var.cur_domain():
+                if not con.has_support(var, val):
+                    var.prune_value(val)
+                    pruned.append((var, val))
+                    if var.cur_domain_size() == 0:
+                        return False, pruned
+
+                    for con1 in csp.get_cons_with_var(var):
+                        if con1 not in queue:
+                            queue.append(con1)
+
+    return True, pruned
 
 
 def ord_mrv(csp: 'CSP') -> 'Variable':
@@ -108,5 +151,14 @@ def ord_mrv(csp: 'CSP') -> 'Variable':
     That is, return the variable with the most constraint current domain,
     i.e. the variable with the fewest legal values.
     """
-    # TODO: Implement
-    raise NotImplementedError("ord_mrv not implemented")
+    list_vars = csp.get_all_vars()
+
+    min_num = float('inf')
+    min_var = None
+
+    for var in list_vars:
+        if var.domain_size() < min_num:
+            min_num = var.cur_domain_size()
+            min_var = var
+
+    return min_var
