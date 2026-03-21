@@ -64,8 +64,8 @@ def futoshiki_csp_model_1(grid: list[list[Any]]) -> tuple['CSP', list[list['Vari
     :param grid: a list of lists of objects representing the Futoshiki grid, e.g.
                     grid = [[0,>,0,.,2], [0,.,0,.,0], [0,.,0,<,0]]
     """
-    # TODO: Implement
-    raise NotImplementedError("Futoshiki CSP Model 1 not implemented")
+    vars = []
+    
 
 def futoshiki_csp_model_2(grid: list[list[Any]]) -> tuple['CSP', list[list['Variable']]]:
     """
