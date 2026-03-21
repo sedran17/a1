@@ -31,8 +31,13 @@ def compute_utility(board: tuple[tuple[int, ...], ...], color: int) -> int:
 
     :return: the utility of the given board for the given player color.
     """
-    # TODO: Implement
-    raise RuntimeError("Method not implemented")  # Replace this line!
+    dark, light = get_score(board)
+    if color == 1:
+        return dark - light
+    elif color == 2:
+        return light - dark
+    else:
+        return None
 
 def compute_heuristic(board: tuple[tuple[int, ...], ...], color: int) -> int:
     """
@@ -43,8 +48,13 @@ def compute_heuristic(board: tuple[tuple[int, ...], ...], color: int) -> int:
 
     :return: the heuristic value of the given board for the given player color.
     """
-    # TODO: Implement
-    raise RuntimeError("Method not implemented")  # Replace this line!
+    dark, light = get_score(board)
+    if color == 1:
+        return light - dark
+    elif color == 2:
+        return dark - light
+    else:
+        return None
 
 
 ###############################################################################
@@ -172,8 +182,24 @@ def minimax_min_node(
     :return: a tuple (None|(i,j), utility) of the next move to be
              taken, and the utility value associated with it
     """
-    # TODO: Implement
-    raise NotImplementedError("minimax_min_node is not implemented")
+    moves = get_possible_moves(board, color)
+    best_move = (None, float("inf"))
+    opp_color = 2
+    if color == 2:
+        opp_color = 1
+    if len(moves) == 0:
+        return None, compute_utility(board, opp_color)
+    else:
+        opp_color = 2
+        if color == 2:
+            opp_color = 1
+        for move in moves:
+            new_board = play_move(board, color, move[0], move[1])
+            new_move = minimax_max_node(value_fn, new_board, opp_color, limit)
+
+            if new_move[1] < best_move[1]:
+                best_move = (move, new_move[1])
+        return best_move
 
 def minimax_max_node(
         value_fn: Callable,
@@ -203,8 +229,23 @@ def minimax_max_node(
     :return: a tuple (None|(i,j), utility) of the next move to be
              taken, and the utility value associated with it
     """
-    # TODO: Implement
-    raise NotImplementedError("minimax_max_node is not implemented")
+    moves = get_possible_moves(board, color)
+    best_move = (None, float("-inf"))
+    opp_color = 2
+    if color == 2:
+        opp_color = 1
+    if len(moves) == 0:
+        return None, compute_utility(board, color)
+    else:
+        for move in moves:
+            new_board = play_move(board, color, move[0], move[1])
+            new_move = minimax_min_node(value_fn, new_board, opp_color, limit)
+
+            if new_move[1] > best_move[1]:
+                best_move = (move, new_move[1])
+        return best_move
+
+
 
 def select_move_minimax(
         value_fn: Callable,
@@ -227,8 +268,8 @@ def select_move_minimax(
 
     :return: a tuple (i, j) of the next move to be taken, or None
     """
-    # TODO: Implement
-    raise NotImplementedError("select_move_minimax is not implemented")
+    move, _ = minimax_max_node(value_fn, board, color, limit)
+    return move
 
 
 ###############################################################################
