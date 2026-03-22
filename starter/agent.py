@@ -1,5 +1,5 @@
-from typing import Callable, Optional
 
+from typing import Callable, Optional
 # These functions are imported for you to use
 # in your implementation.
 from src import (
@@ -9,7 +9,6 @@ from src import (
     play_move,
     eprint      # for debugging
 )
-
 # Use this global variable for state caching.
 # You may find that it's useful to use the following
 # information to form a key into the
@@ -18,17 +17,14 @@ from src import (
 #
 state_cache = {}
 
-
 ###############################################################################
 ############################# VALUE FUNCTIONS #################################
 ###############################################################################
 def compute_utility(board: tuple[tuple[int, ...], ...], color: int) -> int:
     """
     Return the utility value of the given board for the given player color.
-
     :param board: a board representing the current state of an Othello game
     :param color: the color of the player. 1 for dark, 2 for light.
-
     :return: the utility of the given board for the given player color.
     """
     dark, light = get_score(board)
@@ -38,14 +34,11 @@ def compute_utility(board: tuple[tuple[int, ...], ...], color: int) -> int:
         return light - dark
     else:
         return None
-
 def compute_heuristic(board: tuple[tuple[int, ...], ...], color: int) -> int:
     """
     Return the heuristic value of the given board for the given player color.
-
     :param board: a board representing the current state of an Othello game
     :param color: the color of the player. 1 for dark, 2 for light.
-
     :return: the heuristic value of the given board for the given player color.
     """
     dark, light = get_score(board)
@@ -55,7 +48,6 @@ def compute_heuristic(board: tuple[tuple[int, ...], ...], color: int) -> int:
         return dark - light
     else:
         return None
-
 
 ###############################################################################
 ####################### ALPHA-BETA PRUNING FUNCTIONS ##########################
@@ -74,7 +66,6 @@ def alphabeta_min_node(
     and the *lowest* possible utility itself for the given board, color,
     limit, value_fn to determine utility and alpha, beta to prune.
     Optionally use state caching and node ordering.
-
     :param value_fn: function used to determine utility values
     :param board: the current state of the Othello game
     :param color: the color of the current player (1 for dark, 2 for light)
@@ -85,12 +76,10 @@ def alphabeta_min_node(
                     if 1, use state caching
                     if 0, do not use state caching
     :param ordering: whether to order moves during move selection
-
     :return: a tuple (None|(i,j), utility) of the next move to be
              taken, and the utility value associated with it
     """
     opp_color = 2
-
     if color == 2:
         opp_color = 1
     if caching == 1:
@@ -98,34 +87,27 @@ def alphabeta_min_node(
         if key in state_cache:
             return state_cache[key]
 
-
     moves = get_possible_moves(board, color)
     best_move = None
     value = float("inf")
 
-
     if len(moves) == 0 or limit < 1:
-        val = value_fn(board, color)
+        val = value_fn(board, opp_color)
         if caching == 1:
             state_cache[key] = None, val
         return None, val
-
     for move in moves:
         new_board = play_move(board, color, move[0], move[1])
         _, child_value = alphabeta_max_node(value_fn, new_board, opp_color, alpha, beta, limit-1, caching)
-
         if child_value < value:
             value = child_value
             best_move = move
-
         beta = min(beta, value)
-
         if alpha >= beta:
             break
     if caching == 1:
         state_cache[key] = best_move, value
     return best_move, value
-
 def alphabeta_max_node(
         value_fn: Callable,
         board: tuple[tuple[int, ...], ...],
@@ -140,7 +122,6 @@ def alphabeta_max_node(
     and the *highest* possible utility itself for the given board, color,
     limit, value_fn to determine utility and alpha, beta to prune.
     Optionally use state caching and node ordering.
-
     :param value_fn: function used to determine utility values
     :param board: the current state of the Othello game
     :param color: the color of the current player (1 for dark, 2 for light)
@@ -151,12 +132,10 @@ def alphabeta_max_node(
                     if 1, use state caching
                     if 0, do not use state caching
     :param ordering: whether to order moves during move selection
-
     :return: a tuple (None|(i,j), utility) of the next move to be
              taken, and the utility value associated with it
     """
     opp_color = 2
-
     if color == 2:
         opp_color = 1
     if caching == 1:
@@ -164,33 +143,26 @@ def alphabeta_max_node(
         if key in state_cache:
             return state_cache[key]
 
-
     moves = get_possible_moves(board, color)
     best_move = None
     value = float("-inf")
-
     if len(moves) == 0 or limit < 1:
         val = value_fn(board, color)
         if caching == 1:
             state_cache[key] = None, val
         return None, val
-
     for move in moves:
         new_board = play_move(board, color, move[0], move[1])
         _, child_value = alphabeta_min_node(value_fn, new_board, opp_color, alpha, beta, limit-1, caching)
-
         if child_value > value:
             value = child_value
             best_move = move
-
         alpha = max(alpha, value)
-
         if alpha >= beta:
             break
     if caching == 1:
         state_cache[key] = best_move, value
     return best_move, value
-
 def select_move_alphabeta(
         value_fn: Callable,
         board: tuple[tuple[int, ...], ...],
@@ -202,7 +174,6 @@ def select_move_alphabeta(
     Return the next move determined by alpha-beta pruning in a game of Othello
     defined by the given board, player color, depth limit, and use of caching
     and node ordering. Use value_fn to determine utility values in subroutines.
-
     :param value_fn: function used to determine utility values
     :param board: the current state of the Othello game
     :param color: the color of the current player (1 for dark, 2 for light)
@@ -211,14 +182,12 @@ def select_move_alphabeta(
                     if 1, use state caching
                     if 0, do not use state caching
     :param ordering: whether to order moves during move selection
-
     :return: a tuple (i, j) of the next move to be taken, or None
     """
     alpha = float("-inf")
     beta = float("inf")
     move, _ = alphabeta_max_node(value_fn, board, color, alpha, beta, limit, caching)
     return move
-
 
 ###############################################################################
 ############################# MINIMAX FUNCTIONS ###############################
@@ -234,12 +203,10 @@ def minimax_min_node(
     and the lowest possible utility itself for the given board, color,
     limit, using value_fn to determine utility. Optionally use state caching
     and node ordering.
-
     The algorithm is outlined as follows:
         1. Get all allowed moves
         2. Check if we are at a terminal state
         3. If not, minimize over the set of max utility values for each possible move
-
     :param value_fn: function used to determine utility values
     :param board: the current state of the Othello game
     :param color: the color of the current player (1 for dark, 2 for light)
@@ -247,7 +214,6 @@ def minimax_min_node(
     :param caching: whether to use state caching in Minimax
                     if 1, use state caching
                     if 0, do not use state caching
-
     :return: a tuple (None|(i,j), utility) of the next move to be
              taken, and the utility value associated with it
     """
@@ -259,12 +225,10 @@ def minimax_min_node(
         if key in state_cache:
             return state_cache[key]
 
-
     moves = get_possible_moves(board, color)
     best_move = (None, float("inf"))
-
     if len(moves) == 0 or limit < 1:
-        val = value_fn(board, color)
+        val = value_fn(board, opp_color)
         if caching == 1:
             state_cache[key] = None, val
         return None, val
@@ -272,13 +236,11 @@ def minimax_min_node(
         for move in moves:
             new_board = play_move(board, color, move[0], move[1])
             new_move = minimax_max_node(value_fn, new_board, opp_color, limit-1, caching)
-
             if new_move[1] < best_move[1]:
                 best_move = (move, new_move[1])
         if caching == 1:
             state_cache[key] = best_move[0], best_move[1]
         return best_move
-
 def minimax_max_node(
         value_fn: Callable,
         board: tuple[tuple[int, ...], ...],
@@ -290,12 +252,10 @@ def minimax_max_node(
     and the highest possible utility itself for the given board, color,
     limit, using value_fn to determine utility. Optionally use state caching
     and node ordering.
-
     The algorithm is outlined as follows:
         1. Get all allowed moves
         2. Check if we are at a terminal state
         3. If not, maximize over the set of min utility values for each possible move
-
     :param value_fn: function used to determine utility values
     :param board: the current state of the Othello game
     :param color: the color of the current player (1 for dark, 2 for light)
@@ -303,22 +263,18 @@ def minimax_max_node(
     :param caching: whether to use state caching in Minimax
                     if 1, use state caching
                     if 0, do not use state caching
-
     :return: a tuple (None|(i,j), utility) of the next move to be
              taken, and the utility value associated with it
     """
     opp_color = 2
     if color == 2:
         opp_color = 1
-
     if caching == 1:
         key = (board, color, limit, "max")
         if key in state_cache:
             return state_cache[key]
-
     moves = get_possible_moves(board, color)
     best_move = (None, float("-inf"))
-
     if len(moves) == 0 or limit < 1:
         val = value_fn(board, color)
         if caching == 1:
@@ -328,13 +284,11 @@ def minimax_max_node(
         for move in moves:
             new_board = play_move(board, color, move[0], move[1])
             new_move = minimax_min_node(value_fn, new_board, opp_color, limit-1, caching)
-
             if new_move[1] > best_move[1]:
                 best_move = (move, new_move[1])
         if caching == 1:
             state_cache[key] = best_move[0], best_move[1]
         return best_move
-
 
 
 def select_move_minimax(
@@ -347,7 +301,6 @@ def select_move_minimax(
     Return the next move determined by Minimax in a game of Othello
     defined by the given board, player color, depth limit, and use of caching.
     Uses value_fn to determine utility values in subroutines.
-
     :param value_fn: function used to determine utility values
     :param board: the current state of the Othello game
     :param color: the color of the current player (1 for dark, 2 for light)
@@ -355,12 +308,10 @@ def select_move_minimax(
     :param caching: whether to use state caching
                     if 1, use state caching
                     if 0, do not use state caching
-
     :return: a tuple (i, j) of the next move to be taken, or None
     """
     move, _ = minimax_max_node(value_fn, board, color, limit, caching)
     return move
-
 
 ###############################################################################
 ############################### ENTRY-POINT ###################################
@@ -375,17 +326,14 @@ def run_ai():
         * caching  - 1 to run with caching, otherwise run without it
         * ordering - 1 to run alpha-beta with node ordering,
                      otherwise run without it.
-
     Use `compute_utility` as the value function by default.
     """
     print("Othello AI")  # First line is the name of this AI
     color, limit, minimax, caching, ordering = map(int, input().split(","))
-
     eprint("Running MINIMAX") if minimax else eprint("Running ALPHA-BETA")
     eprint("State Caching is ON") if caching else eprint("State Caching is OFF")
     eprint("Node Ordering is ON") if ordering else eprint("Node Ordering is OFF")
     eprint("Depth Limit is ", limit) if limit >= 0 else eprint("Depth Limit is OFF")
-
     while True:
         # Read the current state of the game as yielded by the game manager.
         # Consists of a string of the form:
@@ -400,7 +348,6 @@ def run_ai():
         #
         # The second digit is the score for player 2 (the light player.)
         status, _, _ = input().strip().split()
-
         if status == "FINAL":
             break
         else:
@@ -418,7 +365,6 @@ def run_ai():
             #   * 1 - a piece played by player 1, or the dark player.
             #   * 2 - a piece played by player 2, or the light player.
             board = eval(input())
-
             if (minimax == 1):
                 i, j = select_move_minimax(
                     compute_utility,
@@ -436,9 +382,7 @@ def run_ai():
                     caching,
                     ordering
                 )
-
             print("{} {}".format(i, j))
-
 
 if __name__ == "__main__":
     run_ai()
