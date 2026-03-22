@@ -3,7 +3,7 @@ import os
 from test_utils import TestOutput
 
 try:
-    import agent_save
+    import start3.agent_save as agent_save
 except ImportError:
     pass
 
