@@ -3,7 +3,7 @@ import os
 from test_utils import TestOutput
 
 try:
-    import agent
+    import agent_save
 except ImportError:
     pass
 
@@ -685,20 +685,20 @@ def minimax_max_node_2_test(value_fn, max_node_fn, test_name) -> TestOutput:
 
 
 othello_tests = [
-    (compute_utility_test, (agent.compute_utility,), "Minimax Compute Utility"),
-    (select_move_minimax_test, (agent.compute_utility, agent.select_move_minimax), "Minimax Select Move"),
-    (minimax_min_node_1_test, (agent.compute_utility, agent.minimax_min_node), "Minimax Min Node Test (Player 1)"),
-    (minimax_max_node_1_test, (agent.compute_utility, agent.minimax_max_node), "Minimax Max Node Test (Player 1)"),
-    (minimax_min_node_2_test, (agent.compute_utility, agent.minimax_min_node), "Minimax Min Node Test (Player 2)"),
-    (minimax_max_node_2_test, (agent.compute_utility, agent.minimax_max_node), "Minimax Max Node Test (Player 2)"),
-    (select_move_alphabeta_test, (agent.compute_utility, agent.select_move_alphabeta),  "Alpha-Beta Select Move"),
-    (select_move_equal_test, (agent.compute_utility, (agent.select_move_minimax, agent.select_move_alphabeta)), "Alpha-Beta Equal Select Move"),
-    (alphabeta_min_node_1_test, (agent.compute_utility, agent.alphabeta_min_node), "Alpha-Beta Min Node Test (Player 1)"),
-    (alphabeta_max_node_1_test, (agent.compute_utility, agent.alphabeta_max_node), "Alpha-Beta Max Node Test (Player 1)"),
-    (alphabeta_min_node_2_test, (agent.compute_utility, agent.alphabeta_min_node), "Alpha-Beta Min Node Test (Player 2)"),
-    (alphabeta_max_node_2_test, (agent.compute_utility, agent.alphabeta_max_node), "Alpha-Beta Max Node Test (Player 2)"),
-    (ordering_small_test, (agent.compute_utility, agent.select_move_alphabeta), "Ordering (Small Boards)"),
-    (ordering_big_test, (agent.compute_utility, agent.select_move_alphabeta), "Ordering (Big Boards)"),
-    (caching_small_test, (agent.compute_utility, agent.select_move_alphabeta, agent), "Caching (Small Boards)"),
-    (caching_big_test, (agent.compute_utility, agent.select_move_alphabeta, agent), "Caching (Big Boards)"),
+    (compute_utility_test, (agent_save.compute_utility,), "Minimax Compute Utility"),
+    (select_move_minimax_test, (agent_save.compute_utility, agent_save.select_move_minimax), "Minimax Select Move"),
+    (minimax_min_node_1_test, (agent_save.compute_utility, agent_save.minimax_min_node), "Minimax Min Node Test (Player 1)"),
+    (minimax_max_node_1_test, (agent_save.compute_utility, agent_save.minimax_max_node), "Minimax Max Node Test (Player 1)"),
+    (minimax_min_node_2_test, (agent_save.compute_utility, agent_save.minimax_min_node), "Minimax Min Node Test (Player 2)"),
+    (minimax_max_node_2_test, (agent_save.compute_utility, agent_save.minimax_max_node), "Minimax Max Node Test (Player 2)"),
+    (select_move_alphabeta_test, (agent_save.compute_utility, agent_save.select_move_alphabeta),  "Alpha-Beta Select Move"),
+    (select_move_equal_test, (agent_save.compute_utility, (agent_save.select_move_minimax, agent_save.select_move_alphabeta)), "Alpha-Beta Equal Select Move"),
+    (alphabeta_min_node_1_test, (agent_save.compute_utility, agent_save.alphabeta_min_node), "Alpha-Beta Min Node Test (Player 1)"),
+    (alphabeta_max_node_1_test, (agent_save.compute_utility, agent_save.alphabeta_max_node), "Alpha-Beta Max Node Test (Player 1)"),
+    (alphabeta_min_node_2_test, (agent_save.compute_utility, agent_save.alphabeta_min_node), "Alpha-Beta Min Node Test (Player 2)"),
+    (alphabeta_max_node_2_test, (agent_save.compute_utility, agent_save.alphabeta_max_node), "Alpha-Beta Max Node Test (Player 2)"),
+    (ordering_small_test, (agent_save.compute_utility, agent_save.select_move_alphabeta), "Ordering (Small Boards)"),
+    (ordering_big_test, (agent_save.compute_utility, agent_save.select_move_alphabeta), "Ordering (Big Boards)"),
+    (caching_small_test, (agent_save.compute_utility, agent_save.select_move_alphabeta, agent_save), "Caching (Small Boards)"),
+    (caching_big_test, (agent_save.compute_utility, agent_save.select_move_alphabeta, agent_save), "Caching (Big Boards)"),
 ]
