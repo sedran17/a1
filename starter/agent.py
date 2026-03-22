@@ -99,19 +99,19 @@ def alphabeta_min_node(
             return state_cache[key]
 
 
-    moves = get_possible_moves(board, opp_color)
+    moves = get_possible_moves(board, color)
     best_move = None
     value = float("inf")
 
 
     if len(moves) == 0 or limit < 1:
-        val = value_fn(board, color)
+        val = value_fn(board, opp_color)
         if caching == 1:
             state_cache[key] = None, val
         return None, val
 
     for move in moves:
-        new_board = play_move(board, opp_color, move[0], move[1])
+        new_board = play_move(board, color, move[0], move[1])
         _, child_value = alphabeta_max_node(value_fn, new_board, opp_color, alpha, beta, limit-1, caching)
 
         if child_value < value:
@@ -260,17 +260,17 @@ def minimax_min_node(
             return state_cache[key]
 
 
-    moves = get_possible_moves(board, opp_color)
+    moves = get_possible_moves(board, color)
     best_move = (None, float("inf"))
 
     if len(moves) == 0 or limit < 1:
-        val = value_fn(board, color)
+        val = value_fn(board, opp_color)
         if caching == 1:
             state_cache[key] = None, val
         return None, val
     else:
         for move in moves:
-            new_board = play_move(board, opp_color, move[0], move[1])
+            new_board = play_move(board, color, move[0], move[1])
             new_move = minimax_max_node(value_fn, new_board, opp_color, limit-1, caching)
 
             if new_move[1] < best_move[1]:
