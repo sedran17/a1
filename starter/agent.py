@@ -89,8 +89,32 @@ def alphabeta_min_node(
     :return: a tuple (None|(i,j), utility) of the next move to be
              taken, and the utility value associated with it
     """
-    # TODO: Implement
-    raise RuntimeError("Method not implemented")  # Replace this line!
+    moves = get_possible_moves(board, color)
+    best_move = None
+    value = float("inf")
+
+    opp_color = 2
+
+    if color == 2:
+        opp_color = 1
+
+    if len(moves) == 0 or limit < 1:
+        return None, value_fn(board, opp_color)
+
+    for move in moves:
+        new_board = play_move(board, color, move)
+        _, child_value = alphabeta_max_node(value_fn, new_board, opp_color, alpha, beta, limit)
+
+        if child_value < value:
+            value = child_value
+            best_move = move
+
+        beta = min(beta, value)
+
+        if alpha >= beta:
+            break
+
+    return best_move, value
 
 def alphabeta_max_node(
         value_fn: Callable,
@@ -121,8 +145,32 @@ def alphabeta_max_node(
     :return: a tuple (None|(i,j), utility) of the next move to be
              taken, and the utility value associated with it
     """
-    # TODO: Implement
-    raise RuntimeError("Method not implemented")  # Replace this line!
+    moves = get_possible_moves(board, color)
+    best_move = None
+    value = float("-inf")
+
+    opp_color = 2
+
+    if color == 2:
+        opp_color = 1
+
+    if len(moves) == 0 or limit < 1:
+        return None, value_fn(board, color)
+
+    for move in moves:
+        new_board = play_move(board, color, move)
+        _, child_value = alphabeta_min_node(value_fn, new_board, opp_color, alpha, beta, limit)
+
+        if child_value > value:
+            value = child_value
+            best_move = move
+
+        alpha = max(alpha, value)
+
+        if alpha >= beta:
+            break
+
+    return best_move, value
 
 def select_move_alphabeta(
         value_fn: Callable,
@@ -147,8 +195,10 @@ def select_move_alphabeta(
 
     :return: a tuple (i, j) of the next move to be taken, or None
     """
-    # TODO: Implement
-    raise RuntimeError("Method not implemented")  # Replace this line!
+    alpha = float("-inf")
+    beta = float("inf")
+    move, _ = alphabeta_max_node(value_fn, board, color, alpha, beta, limit)
+    return move
 
 
 ###############################################################################
@@ -187,12 +237,9 @@ def minimax_min_node(
     opp_color = 2
     if color == 2:
         opp_color = 1
-    if len(moves) == 0:
-        return None, compute_utility(board, opp_color)
+    if len(moves) == 0 or limit < 1:
+        return None, value_fn(board, opp_color)
     else:
-        opp_color = 2
-        if color == 2:
-            opp_color = 1
         for move in moves:
             new_board = play_move(board, color, move[0], move[1])
             new_move = minimax_max_node(value_fn, new_board, opp_color, limit)
@@ -234,8 +281,10 @@ def minimax_max_node(
     opp_color = 2
     if color == 2:
         opp_color = 1
-    if len(moves) == 0:
-        return None, compute_utility(board, color)
+    limit -= 1
+
+    if len(moves) == 0 or limit < 1:
+        return None, value_fn(board, color)
     else:
         for move in moves:
             new_board = play_move(board, color, move[0], move[1])
