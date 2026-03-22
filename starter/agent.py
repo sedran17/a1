@@ -105,7 +105,7 @@ def alphabeta_min_node(
 
 
     if len(moves) == 0 or limit < 1:
-        val = value_fn(board, opp_color)
+        val = value_fn(board, color)
         if caching == 1:
             state_cache[key] = None, val
         return None, val
@@ -264,7 +264,7 @@ def minimax_min_node(
     best_move = (None, float("inf"))
 
     if len(moves) == 0 or limit < 1:
-        val = value_fn(board, opp_color)
+        val = value_fn(board, color)
         if caching == 1:
             state_cache[key] = None, val
         return None, val
